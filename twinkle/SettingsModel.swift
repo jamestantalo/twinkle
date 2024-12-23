@@ -23,14 +23,14 @@ class SettingsModel {
     var numberOfLights: Int = 18
     var wireYheight: CGFloat = 165
     var wireThickness: CGFloat = 16.0
-    var wireColor: String = "white"
-    var wireTexture: String = "greenwire"
+    var wireColor: String = "green"
+    var wireTexture: String = "wire_evergreen"
     var droopCalculationSamples: Int = 500
     var lightbulbScale: CGFloat = 0.35
-    var lightbulbSocketImage: String = "socket"
-    var lightbulbOffImage: String = "bulb_off"
-    var lightbulbOnImage: String = "bulb_on"
-    var lightbulbflareImage: String = "flare"
+    var lightbulbSocketImage: String = "socket_green"
+    var lightbulbOffImage: String = "white_bulb_off"
+    var lightbulbOnImage: String = "white_bulb_on"
+    var lightbulbflareImage: String = "white_flare"
     var lightbulbOffset: CGFloat = 4.0
     var socketOffset: CGFloat = -45.0
     var animationStyle: AnimationStyle = .twinkle
@@ -69,6 +69,8 @@ class SettingsModel {
         "White": ["White"],
         "Green": ["Green"],
         "Blue": ["Blue"],
+        "Orange": ["Orange"],
+        "Purple": ["Purple"],
         "Red and White": ["Red", "White"],
         "Blue and White": ["Blue", "White"],
         "Rainbow": ["Red", "Yellow", "Green", "Blue", "Violet"]
@@ -94,6 +96,44 @@ class SettingsModel {
             }
         }
     }
+    
+    var selectedWireSocketPair: WireSocketPair = .evergreen {
+        didSet {
+            wireTexture = selectedWireSocketPair.wireTexture
+            lightbulbSocketImage = selectedWireSocketPair.socketImage
+            print("SettingsModel: Wire/socket pair changed to \(selectedWireSocketPair.rawValue).")
+
+            // Automatically update predefined pattern for Halloween
+            if selectedWireSocketPair == .halloween {
+                selectedPatternName = "Orange" // This will trigger the didSet observer for selectedPatternName
+            }
+        }
+    }
+
+    enum WireSocketPair: String, CaseIterable {
+        case evergreen = "Evergreen"
+        case candycane = "Candycane"
+        case halloween = "Halloween"
+        
+        var wireTexture: String {
+            switch self {
+            case .evergreen: return "wire_evergreen"
+            case .candycane: return "wire_candycane"
+            case .halloween: return "wire_black"
+            }
+        }
+        
+        var socketImage: String {
+            switch self {
+            case .evergreen: return "socket_green"
+            case .candycane: return "socket_white"
+            case .halloween: return "socket_black"
+            }
+        }
+    }
+
+    
+    
 
     // Color offsets for rendering
     var huePattern: [CGFloat] = []

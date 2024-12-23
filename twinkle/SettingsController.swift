@@ -18,6 +18,8 @@ import SpriteKit
 
 class SettingsController: NSWindowController {
     // MARK: - Outlets
+    @IBOutlet weak var wireHeightSlider: NSSlider!
+    @IBOutlet weak var wireHeightLabel: NSTextField!
     @IBOutlet weak var pinsStepper: NSStepper!
     @IBOutlet weak var pinsLabel: NSTextField!
     @IBOutlet weak var droopSlider: NSSlider!
@@ -27,6 +29,7 @@ class SettingsController: NSWindowController {
     @IBOutlet weak var animationStylePopUpButton: NSPopUpButton!
     @IBOutlet weak var globalHueRotationSlider: NSSlider!   // Slider for global hue rotation
     @IBOutlet weak var patternPresetPopUpButton: NSPopUpButton!
+    @IBOutlet weak var wireSocketPairPopUpButton: NSPopUpButton!
     @IBAction func coreColorChanged(_ sender: NSPopUpButton) {
         guard let selectedColor = sender.titleOfSelectedItem?.lowercased(),
               let scene = self.scene,
@@ -96,6 +99,12 @@ class SettingsController: NSWindowController {
 
     private func loadUIFromSettings() {
         // Load settings into UI
+        
+        wireHeightSlider.minValue = 140 // Minimum value for the slider
+        wireHeightSlider.maxValue = 200 // Maximum value for the slider
+        wireHeightSlider.doubleValue = Double(Int(settingsModel.wireYheight)) // Initialize to integer value
+        wireHeightLabel.stringValue = "\(Int(settingsModel.wireYheight))" // Display as integer
+
         pinsStepper.integerValue = settingsModel.numberOfPins
         pinsLabel.stringValue = "\(settingsModel.numberOfPins)"
 
@@ -115,10 +124,22 @@ class SettingsController: NSWindowController {
         patternPresetPopUpButton.removeAllItems()
         patternPresetPopUpButton.addItems(withTitles: Array(SettingsModel.predefinedPatterns.keys))
         patternPresetPopUpButton.selectItem(withTitle: settingsModel.selectedPatternName)
+
+        wireSocketPairPopUpButton.removeAllItems()
+        wireSocketPairPopUpButton.addItems(withTitles: SettingsModel.WireSocketPair.allCases.map { $0.rawValue })
+        wireSocketPairPopUpButton.selectItem(withTitle: settingsModel.selectedWireSocketPair.rawValue)
         
     }
 
     // MARK: - Actions
+    
+    @IBAction func wireHeightSliderChanged(_ sender: NSSlider) {
+        let intValue = Int(sender.doubleValue) // Truncate to integer
+        settingsModel.wireYheight = CGFloat(intValue) // Update the settings model
+        wireHeightLabel.stringValue = "\(intValue)" // Update the label to display the integer value
+        onUpdateSettings?() // Notify other components to re-render
+    }
+
     @IBAction func pinsStepperChanged(_ sender: NSStepper) {
         settingsModel.numberOfPins = sender.integerValue
         pinsLabel.stringValue = "\(settingsModel.numberOfPins)"
@@ -151,6 +172,15 @@ class SettingsController: NSWindowController {
         settingsModel.selectedPatternName = selectedPattern
         onUpdateSettings?()
         print("SettingsController: Pattern preset changed to \(selectedPattern).")
+    }
+    
+    @IBAction func wireSocketPairChanged(_ sender: NSPopUpButton) {
+        guard let selectedTitle = sender.titleOfSelectedItem,
+              let selectedPair = SettingsModel.WireSocketPair.allCases.first(where: { $0.rawValue == selectedTitle }) else {
+            return
+        }
+        settingsModel.selectedWireSocketPair = selectedPair
+        onUpdateSettings?()
     }
 
     @IBAction func globalHueRotationChanged(_ sender: NSSlider) {
